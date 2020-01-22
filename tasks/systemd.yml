@@ -1,0 +1,14 @@
+- name: Deploy getty systemd service unit (Ubuntu)
+  when: ansible_distribution == 'Ubuntu'
+  template:
+    src: systemd/ubuntu/getty.service.j2
+    dest: /etc/systemd/system/{{ dec_vt_service_name }}
+- name: Deploy getty systemd service unit (Raspbian)
+  when: ansible_lsb.id == 'Raspbian'
+  template:
+    src: systemd/raspian/getty.service.j2
+    dest: /etc/systemd/system/{{ dec_vt_service_name }}
+- name: Enable getty systemd service unit
+  systemd:
+    name: '{{ dec_vt_service_name }}'
+    enabled: yes

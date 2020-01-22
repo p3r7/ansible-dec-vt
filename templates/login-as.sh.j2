@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+until who | grep {{ dec_vt_login_as_user }} 2>&1 >/dev/null
+do
+    sleep 1
+done
+
+. /tmp/tmux-{{ dec_vt_term }}-env
+
+# NB: this notation got introduced in 1.8.21 but is broken in 1.8.23 when used alognside -i
+# we use the older, more verbose, notation instead
+#sudo --preserve-env=REAL_TERM -iu {{ dec_vt_login_as_user }}
+sudo TMUX=$TMUX TMUX_PANE=$TMUX_PANE REAL_TERM=$REAL_TERM -iu {{ dec_vt_login_as_user }}

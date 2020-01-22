@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+if [[ "$TERM" == "screen" ]]; then
+    chown {{ dec_vt_term_user }}:dialout /tmp/tmux-{{ dec_vt_term }}.sock
+
+    # kill all other sessions
+    tmux -S {{ dec_vt_socket }} kill-session -a
+
+    : > /tmp/tmux-{{ dec_vt_term }}-env
+    echo "export TMUX=$TMUX" >> /tmp/tmux-{{ dec_vt_term }}-env
+    echo "export TMUX_PANE=$TMUX_PANE" >> /tmp/tmux-{{ dec_vt_term }}-env
+    echo "export REAL_TERM=vt320" >> /tmp/tmux-{{ dec_vt_term }}-env
+
+    #sudo TMUX=$TMUX TMUX_PANE=$TMUX_PANE /usr/local/bin/{{ dec_vt_term }}-login-{{ dec_vt_login_as_user }}
+
+    sudo /usr/local/bin/{{ dec_vt_term }}-login-{{ dec_vt_login_as_user }}
+else
+    tmux -S {{ dec_vt_socket }}
+fi

@@ -1,0 +1,31 @@
+---
+# tasks file for eigenbahn.dec-vt
+
+- name: Add sub-bashrc file
+  template:
+    src: bashrc.j2
+    dest: /home/{{ dec_vt_login_as_user }}/.bashrc_{{ dec_vt_term }}
+    owner: '{{ dec_vt_login_as_user }}'
+    group: '{{ dec_vt_login_as_user }}'
+    mode: 0644
+- name: Add conditonnal source of sub-bashrc file
+  blockinfile:
+    path: /home/{{ dec_vt_login_as_user }}/.bashrc
+    content: |
+      if [[ "$REAL_TERM" == "{{ dec_vt_term }}" ]]; then
+          . ~/.bashrc_{{ dec_vt_term }}
+      fi
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: eigenbahn.dec-vt"
+
+- name: Add useful bash aliases
+  blockinfile:
+    path: /home/{{ dec_vt_login_as_user }}/.bash_aliases
+    create: yes
+    owner: '{{ dec_vt_login_as_user }}'
+    group: '{{ dec_vt_login_as_user }}'
+    mode: 0644
+    content: |
+      alias vt-stop='sudo systemctl stop {{ dec_vt_service_name }}'
+      alias vt-restart='sudo systemctl restart {{ dec_vt_service_name }}'
+      alias vt-attach='tmux -S {{ dec_vt_socket }} a'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: eigenbahn.dec-vt"

@@ -1,0 +1,4 @@
+- name: Declare VT login script as login shell
+  lineinfile:
+    path: /etc/inittab
+    line: 'T0:23:respawn:/sbin/getty -a {{ dec_vt_term_user }} -h -L {{ dec_vt_serial }} {{ dec_vt_baud_rate }} {{ dec_vt_term }}'

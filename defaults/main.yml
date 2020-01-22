@@ -1,0 +1,14 @@
+---
+# defaults file for eigenbahn.dec-vt
+
+dec_vt_term: vt220
+dec_vt_term_user: vt220
+dec_vt_serial: ttyUSB0
+dec_vt_baud_rate: 9600
+
+dec_vt_login_as_user: eigenbahn
+dec_vt_login_as_shells:
+  - bash
+  # - fish
+
+dec_vt_disable_tmux_status_bar: False

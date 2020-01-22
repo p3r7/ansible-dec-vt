@@ -1,0 +1,72 @@
+---
+# tasks file for eigenbahn.dec-vt
+
+- name: Set variables
+  set_fact:
+    dec_vt_service_name: 'vtgetty@{{ dec_vt_serial }}.service'
+    dec_vt_socket: '/tmp/tmux-{{ dec_vt_term }}.sock'
+    dec_vt_login_shell: '/usr/local/bin/{{ dec_vt_term }}-login'
+
+
+- name: Install tmux
+  apt:
+    name: tmux
+- name: Install sudo
+  apt:
+    name: sudo
+- name: Install figlet
+  apt:
+    name: figlet
+
+- name: Deploy VT login script
+  template:
+    src: login.sh.j2
+    dest: '{{ dec_vt_login_shell }}'
+    mode: 0755
+- name: Deploy VT login as script
+  template:
+    src: login-as.sh.j2
+    dest: /usr/local/bin/{{ dec_vt_term }}-login-{{ dec_vt_login_as_user }}
+    mode: 0755
+- name: Declare VT login script as a proper login shell
+  lineinfile:
+    path: /etc/shells
+    line: '{{ dec_vt_login_shell }}'
+
+- name: Create VT user
+  user:
+    name: '{{ dec_vt_term_user }}'
+    create_home: yes
+    shell: /usr/local/bin/{{ dec_vt_term }}-login
+    groups: dialout
+    append: yes
+- name: Make VT login as script sudo-executable w/ no password
+  lineinfile:
+    path: /etc/sudoers.d/{{ dec_vt_term_user }}
+    create: yes
+    mode: 0440
+    line: '{{ dec_vt_term_user }} ALL=(ALL) NOPASSWD: /usr/local/bin/{{ dec_vt_term }}-login-{{ dec_vt_login_as_user }}'
+    validate: visudo -cf %s
+- name: Add real user to dialout group
+  user:
+    name: '{{ dec_vt_login_as_user }}'
+    groups: dialout
+    append: yes
+
+- include: systemd.yml
+  when: ansible_service_mgr == "systemd"
+
+- include: user-shell/{{ shell_name }}.yml
+  with_items: '{{ dec_vt_login_as_shells }}'
+  loop_control:
+    loop_var: shell_name
+
+- name: Disable tmux status bar
+  when: dec_vt_disable_tmux_status_bar
+  lineinfile:
+    path: /home/{{ dec_vt_term_user }}/.tmux.conf
+    create: yes
+    owner: '{{ dec_vt_term_user }}'
+    group: '{{ dec_vt_term_user }}'
+    mode: 0644
+    line: set -g status off
